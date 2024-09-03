@@ -49,4 +49,39 @@ extension Predictable {
 
         return prediction
     }
+
+  /// Creates a prediction from model iD.
+  ///
+  /// - Parameters:
+  ///     - client: The client used to make API requests.
+  ///     - model: pass the model name
+  ///     - input: The input passed to the model.
+  ///     - wait:
+  ///         If set to `true`,
+  ///         this method refreshes the prediction until it completes
+  ///         (``Prediction/status`` is `.succeeded` or `.failed`).
+  ///         By default, this is `false`,
+  ///         and this method returns the prediction object encoded
+  ///         in the original creation response
+  ///         (``Prediction/status`` is `.starting`).
+  public static func predict(
+      with client: Client,
+      model: Model.ID,
+      input: Input,
+      webhook: Webhook? = nil,
+      wait: Bool = false
+  ) async throws -> Prediction {
+    var prediction =  try await client.createPrediction(
+      Prediction.self,
+      model: model,
+      input: input,
+      webhook: webhook
+    )
+
+      if wait {
+          try await prediction.wait(with: client)
+      }
+
+      return prediction
+  }
 }
